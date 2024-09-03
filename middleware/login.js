@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import secret from '../utils/constants.js';
+import { JWT_SECRET } from '../app.js';
 
 const loginMiddleware = async (req, res, next) => {
   try {
@@ -8,7 +8,7 @@ const loginMiddleware = async (req, res, next) => {
     const token = req.header("Authorization").replace("Bearer ", "");
 
     if (!token) throw new Error("Missing auth token");
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, JWT_SECRET);
     if (!decoded) throw new Error("Invalid token");
     next();
   } catch (error) {

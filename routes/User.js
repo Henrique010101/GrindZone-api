@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import secret from '../utils/constants.js'
+import { JWT_SECRET } from '../app.js'
 import loginMiddleware from '../middleware/login.js';
 import authMiddleware from '../middleware/auth.js';
 
@@ -57,9 +57,9 @@ router.post('/register', async (req, res) => {
 
     try {
         await user.save();
-    
+        
         // Create JWT token
-        const token = jwt.sign({ userId: user._id }, secret, { expiresIn: '4h' });
+        const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '4h' });
     
         // Set cookie
         res.cookie('token', token, {
@@ -92,8 +92,8 @@ router.post('/login', async (req, res) => {
     // Check if password match
     const checkPassord = await bcrypt.compare(password, user.password)
 
-    const token = jwt.sign({ userId: user._id }, secret, { expiresIn: "4h" });
-  res.cookie("token", token, {
+    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "4h" });
+    res.cookie("token", token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // Apenas em produção
     maxAge: 4 * 60 * 60 * 1000, // 4h

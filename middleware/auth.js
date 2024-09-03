@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import secret from '../utils/constants.js';
+import { JWT_SECRET } from '../app.js';
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -11,7 +11,7 @@ const authMiddleware = async (req, res, next) => {
       ?.split("=")[1];
     if (!token) throw new Error("Missing auth token");
 
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, JWT_SECRET);
     const user = await User.findOne({ _id: decoded.userId });
 
     if (!user) throw new Error("Missing user");
