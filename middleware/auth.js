@@ -1,27 +1,19 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
-import { JWT_SECRET } from '../app.js';
 
 const authMiddleware = async (req, res, next) => {
-  try {
-    const token = req
-      .header("Cookie")
-      ?.split(";")
-      .find((cookie) => cookie.trim().startsWith("token="))
-      ?.split("=")[1];
-    if (!token) throw new Error("Missing auth token");
+  const token = req.cookies.token; // Extrai o token do cookie
 
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = await User.findOne({ _id: decoded.userId });
+    if (!token) {
+        return res.status(401).json({ msg: 'Acesso negado. Faça login para continuar.' });
+    }
 
-    if (!user) throw new Error("Missing user");
-
-    req.user = user;
-    next();
-  } catch (error) {
-    console.error("Error in authMiddleware: ", error);
-    res.status(401).send({ error: `${error.message || error} - Unauthorized` });
-  }
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verifica e decodifica o token
+        req.user = decoded; // Armazena os dados do usuário na requisição
+        next(); // Prossegue para a próxima função
+    } catch (error) {
+        return res.status(403).json({ msg: 'Token inválido ou expirado.' });
+    }
 };
 
 export default  authMiddleware;

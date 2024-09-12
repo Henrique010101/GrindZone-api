@@ -23,7 +23,8 @@ app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb" }));
 app.use(cors({
-  origin: "*"
+  origin: "http://127.0.0.1:5500",
+  credentials: true,
 }));
 
 connectDB()
