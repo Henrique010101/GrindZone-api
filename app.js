@@ -12,8 +12,6 @@ const app = express();
 
 export const JWT_SECRET = process.env.JWT_SECRET;
 
-console.log('JWT Secret:', process.env.JWT_SECRET);
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

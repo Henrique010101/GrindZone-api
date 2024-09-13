@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 const authMiddleware = async (req, res, next) => {
-  const token = req.cookies.token; // Extrai o token do cookie
+    const token = req.cookies.token; // Extrai o token do cookie
 
     if (!token) {
         return res.status(401).json({ msg: 'Acesso negado. Faça login para continuar.' });
@@ -16,4 +16,4 @@ const authMiddleware = async (req, res, next) => {
     }
 };
 
-export default  authMiddleware;
+export default authMiddleware;

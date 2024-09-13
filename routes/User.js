@@ -79,14 +79,14 @@ router.post('/register', async (req, res) => {
     // Set cookie
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Apenas em produção
+      secure: process.env.NODE_ENV === 'production',
       maxAge: 4 * 60 * 60 * 1000, // 4h
-      sameSite: 'None', // verificar quando for colocar em produção
+      sameSite: 'None',
     });
 
     res.status(201).json({
       msg: 'Usuário criado com sucesso!',
-      token, // Opcional: pode incluir o token na resposta se necessário
+      token,
     });
   } catch (error) {
     console.error(error);
@@ -132,7 +132,15 @@ router.post('/login', async (req, res) => {
       sameSite: 'None', // verificar quando for colocar em produção
     });
 
-    res.status(200).send({ message: "Login bem-sucedido." });
+    res.status(200).send(
+      {
+        message: "Login bem-sucedido.",
+        user: {
+          email: user.email,
+          name: user.name // ou outros dados que você queira retornar
+        }
+      }
+    );
   } catch (error) {
     console.error('Erro ao processar login:', error);
     res.status(500).send({ message: "Erro interno do servidor." });
