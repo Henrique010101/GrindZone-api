@@ -6,30 +6,44 @@ const router = express.Router();
 
 router.post('/cart', authMiddleware, async (req, res) => {
     const { productId, quantity } = req.body;
-    const userId = req.user._id;
+    const userId = req.userId;
+
+    // Validação básica
+    if (!productId || !quantity || quantity <= 0) {
+        return res.status(400).json({ message: "Dados inválidos. Verifique o produto e a quantidade." });
+    }
 
     try {
+        // Verificar se o carrinho do usuário já existe
         let cart = await Cart.findOne({ userId });
 
-        if(!cart) {
-            cart = new Cart({ userId, items: [] })
+        if (!cart) {
+            // Criar um novo carrinho se não existir
+            cart = new Cart({ userId, items: [] });
         }
 
+        // Verificar se o produto já está no carrinho
         const existingItemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
 
-        if(existingItemIndex > -1) {
+        if (existingItemIndex > -1) {
+            // Se o produto já está no carrinho, atualizar a quantidade
             cart.items[existingItemIndex].quantity += quantity;
         } else {
+            // Se o produto não está no carrinho, adicionar um novo item
             cart.items.push({ productId, quantity });
         }
 
+        // Salvar o carrinho atualizado
         await cart.save();
 
-        res.status(200).json({ message: "Item adicionado ao carrinho." });
-    } catch(error) {
-        console.error('Erro ao adicionar um item no carrinho:', error);
-        res.status(500).json({ message: "Error interno do servidor."})
-    };
+        // Popular os detalhes dos produtos (incluindo a imagem)
+        const populatedCart = await Cart.findOne({ userId }).populate('items.productId');
+
+        res.status(200).json({ message: "Item adicionado ao carrinho.", cart: populatedCart });
+    } catch (error) {
+        console.error('Erro ao adicionar item no carrinho:', error);
+        res.status(500).json({ message: "Erro interno do servidor. Por favor, tente novamente mais tarde." });
+    }
 });
 
 router.delete('/cart:productId', authMiddleware, async (req,res) => {
