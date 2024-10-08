@@ -1,8 +1,26 @@
 import express from "express";
 import authMiddleware from "../middleware/auth.js";
 import Cart from "../models/Cart.js";
+import User from "../models/User.js";
 
 const router = express.Router();
+
+router.get('/cart', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.userId;
+        const user = await User.findById(userId); // Buscando o usuário pelo ID
+        const cart = await Cart.findOne({ userId }).populate('items.productId');
+
+        if (!cart) {
+            return res.status(404).json({ message: `Seu carrinho está vazio` });
+        }
+
+        res.status(200).json({ cart, userName: user.name });
+    } catch(error) {
+
+        res.status(500).json({ message: 'Erro ao buscar carrinho.' });
+    }
+})
 
 router.post('/cart', authMiddleware, async (req, res) => {
     const { productId, quantity } = req.body;
@@ -41,48 +59,81 @@ router.post('/cart', authMiddleware, async (req, res) => {
 
         res.status(200).json({ message: "Item adicionado ao carrinho.", cart: populatedCart });
     } catch (error) {
-        console.error('Erro ao adicionar item no carrinho:', error);
+        console.error('Erro ao adicionar item no carrinho (API):', error);
         res.status(500).json({ message: "Erro interno do servidor. Por favor, tente novamente mais tarde." });
     }
 });
 
-router.delete('/cart:productId', authMiddleware, async (req,res) => {
-    const { productId } = req.params;
-    const userId = req.user._id;
-
+router.delete('/cart/:productId', authMiddleware, async (req, res) => {
     try {
-        const cart = await Cart.findOne({ userId });
+        const userId = req.userId; // Obtém o ID do usuário
+        const { productId } = req.params; // Obtém o ID do produto a ser removido
 
-        if(!cart) {
-            return res.status(404).json({ message: "Produto não encontrado." });
+        console.log("Removendo produto do carrinho. User ID:", userId, "Produto ID:", productId);
+
+        // Encontra o carrinho do usuário
+        let cart = await Cart.findOne({ userId });
+
+        if (!cart) {
+            console.log("Carrinho não encontrado.");
+            return res.status(404).json({ message: 'Carrinho não encontrado.' });
         }
 
-        cart.items = cart.items.filter(item => item.productId.toString() !== productId)
+        console.log("Carrinho encontrado:", cart);
 
+        // Remove o item do carrinho
+        cart.items = cart.items.filter(item => item.productId.toString() !== productId);
         await cart.save();
 
-        res.status(200).json({ message: "Item removido do carrinho" });
-    } catch(error) {
-        console.error('Erro ao remover item do carrinho:', error);
-        res.status(500).json({ message: "Erro interno do servidor." })
+        console.log("Item removido, salvando o carrinho...");
+
+        // Popula os detalhes do produto antes de enviar a resposta
+        cart = await Cart.findOne({ userId }).populate('items.productId');
+
+        console.log("Carrinho atualizado e populado:", cart);
+
+        res.status(200).json({ message: 'Item removido do carrinho.', cart }); // Retorna o carrinho atualizado
+    } catch (error) {
+        console.error("Erro ao remover item do carrinho:", error);
+        res.status(500).json({ message: 'Erro ao remover item do carrinho.' });
     }
-})
+});
 
-router.get('/cart', authMiddleware, async (req, res) => {
-    const userId = req.user._id;
 
-    try {
-        const cart = await Cart.findOne({ userId }).populate('items.productId');
+// router.put('/cart/:productId', authMiddleware, async (req, res) => {
+//     try {
+//         const userId = req.userId; // Obtém o ID do usuário
+//         const { productId } = req.params; // Obtém o ID do produto
+//         const { quantity } = req.body; // Obtém a nova quantidade do corpo da requisição
 
-        if(!cart) {
-            return res.status(404).json({ message: "Carrinho nõ encontrado." });
-        }
+//         // Encontra o carrinho do usuário
+//         const cart = await Cart.findOne({ userId });
 
-        res.status(200).json(cart);
-    } catch(error) {
-        console.error('Erroao obter itens do carrinho:', error);
-        res.status(500).json({ message: "Erro interno do servidor." })
-    }
-})
+//         if (!cart) {
+//             return res.status(404).json({ message: 'Carrinho não encontrado.' });
+//         }
+
+//         // Encontra o item no carrinho
+//         const item = cart.items.find(item => item.productId.toString() === productId);
+//         if (!item) {
+//             return res.status(404).json({ message: 'Item não encontrado no carrinho.' });
+//         }
+
+//         // Atualiza a quantidade
+//         item.quantity += quantity;
+
+//         // Verifica se a quantidade é maior que 0
+//         if (item.quantity <= 0) {
+//             // Remove o item do carrinho se a quantidade for 0 ou negativa
+//             cart.items = cart.items.filter(i => i.productId.toString() !== productId);
+//         }
+
+//         await cart.save();
+
+//         res.status(200).json({ message: 'Quantidade atualizada com sucesso.', cart });
+//     } catch (error) {
+//         res.status(500).json({ message: 'Erro ao atualizar a quantidade.' });
+//     }
+// });
 
 export default router;
