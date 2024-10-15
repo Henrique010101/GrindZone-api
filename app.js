@@ -14,7 +14,7 @@ export const JWT_SECRET = process.env.JWT_SECRET;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+const port = process.env.PORT || 3000;
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(cookieParser());
@@ -27,8 +27,8 @@ app.use(cors({
 
 connectDB()
   .then(() => {
-    app.listen(3000, () => {
-      console.log("Server is running on port 3000 🏁");
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port} 🏁`);
     });
 
     app.use("/api", routes);

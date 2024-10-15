@@ -100,40 +100,44 @@ router.delete('/cart/:productId', authMiddleware, async (req, res) => {
 });
 
 
-// router.put('/cart/:productId', authMiddleware, async (req, res) => {
-//     try {
-//         const userId = req.userId; // Obtém o ID do usuário
-//         const { productId } = req.params; // Obtém o ID do produto
-//         const { quantity } = req.body; // Obtém a nova quantidade do corpo da requisição
+router.put('/cart/:productId', authMiddleware, async (req, res) => {
+    const productId = req.params.productId; 
+    const userId = req.userId; 
+    const { quantity } = req.body; 
 
-//         // Encontra o carrinho do usuário
-//         const cart = await Cart.findOne({ userId });
+    try {
+        // Encontra o carrinho do usuário
+        let cart = await Cart.findOne({ userId });
 
-//         if (!cart) {
-//             return res.status(404).json({ message: 'Carrinho não encontrado.' });
-//         }
+        if (!cart) {
+            return res.status(404).json({ message: 'Carrinho não encontrado.' });
+        }
 
-//         // Encontra o item no carrinho
-//         const item = cart.items.find(item => item.productId.toString() === productId);
-//         if (!item) {
-//             return res.status(404).json({ message: 'Item não encontrado no carrinho.' });
-//         }
+        // Localiza o índice do item que você deseja atualizar
+        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
 
-//         // Atualiza a quantidade
-//         item.quantity += quantity;
+        if (itemIndex === -1) {
+            return res.status(404).json({ message: 'Produto não encontrado no carrinho.' });
+        }
 
-//         // Verifica se a quantidade é maior que 0
-//         if (item.quantity <= 0) {
-//             // Remove o item do carrinho se a quantidade for 0 ou negativa
-//             cart.items = cart.items.filter(i => i.productId.toString() !== productId);
-//         }
+        // Atualiza a quantidade
+        cart.items[itemIndex].quantity += quantity;
 
-//         await cart.save();
+        // Verifica se a quantidade não fica negativa
+        if (cart.items[itemIndex].quantity < 1) {
+            cart.items.splice(itemIndex, 1); // Remove o item do carrinho
+        }
 
-//         res.status(200).json({ message: 'Quantidade atualizada com sucesso.', cart });
-//     } catch (error) {
-//         res.status(500).json({ message: 'Erro ao atualizar a quantidade.' });
-//     }
-// });
+        await cart.save(); // Salva as alterações no carrinho
+
+        // Popula o campo productId com os detalhes completos do produto
+        cart = await Cart.findOne({ userId }).populate('items.productId');
+
+        return res.status(200).json(cart); // Retorna o carrinho atualizado com os produtos populados
+    } catch (error) {
+        console.error('Erro ao atualizar quantidade:', error);
+        return res.status(500).json({ message: 'Erro no servidor.' });
+    }
+});
 
 export default router;
