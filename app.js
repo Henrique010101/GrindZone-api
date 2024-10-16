@@ -21,25 +21,17 @@ app.use(cookieParser());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cors({
-  origin: "*",
+  origin: "http://127.0.0.1:5500",
   credentials: true,
 }));
-app.use(helmet());
-const helmet = require("helmet");
 
-app.use(
-  helmet.contentSecurityPolicy({
-    directives: {
-      defaultSrc: ["'self'"],
-      fontSrc: ["'self'"],
-      imgSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'"],
-      frameSrc: ["'self'"],
-    },
-    reportOnly: true, // Set to 'true' to enable report-only mode
-  })
-);
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy", 
+    "default-src 'self'; script-src 'self'; font-src 'self' https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self';"
+  );
+  next();
+});
 
 connectDB()
   .then(() => {
