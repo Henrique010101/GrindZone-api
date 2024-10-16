@@ -24,6 +24,10 @@ app.use(cors({
   origin: "http://127.0.0.1:5500",
   credentials: true,
 }));
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "default-src 'self'; script-src 'self' https://vercel.live; font-src 'self' https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com; connect-src 'self' https://vercel.live;");
+  next();
+});
 
 connectDB()
   .then(() => {
