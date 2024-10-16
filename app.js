@@ -24,10 +24,22 @@ app.use(cors({
   origin: "*",
   credentials: true,
 }));
-app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "default-src ; script-src 'self' https://vercel.live; font-src 'self' https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com; connect-src 'self' https://vercel.live;");
-  next();
-});
+app.use(helmet());
+const helmet = require("helmet");
+
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      imgSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'"],
+      frameSrc: ["'self'"],
+    },
+    reportOnly: true, // Set to 'true' to enable report-only mode
+  })
+);
 
 connectDB()
   .then(() => {
