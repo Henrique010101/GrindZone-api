@@ -28,7 +28,7 @@ app.use(cors({
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy", 
-    "default-src 'self'; script-src 'self'; font-src 'self' https://fonts.gstatic.com; style-src 'self' https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self';"
+    "default-src 'self'; script-src 'self'; font-src 'self' https://fonts.gstatic.com; script-src 'self' https://vercel.live; style-src 'self' https://fonts.googleapis.com; img-src 'self' data:; connect-src 'self';"
   );
   next();
 });
@@ -43,6 +43,10 @@ connectDB()
   })
   .catch((err) => {
     console.error("There was an error while connecting to MongoDB: ", err);
+  });
+
+  app.get('/api/', (req, res) => {
+    res.send('Hello World');
   });
 
 export default app;
