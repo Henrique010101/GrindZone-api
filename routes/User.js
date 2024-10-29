@@ -42,28 +42,25 @@ router.post('/register', async (req, res) => {
     return res.status(422).json({ msg: 'As senhas não conferem!' });
   }
 
-  // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  // if (!emailRegex.test(email)) {
-  // return res.status(422).json({ msg: 'Por favor, insira um email válido!' });
-  // }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+  return res.status(422).json({ msg: 'Por favor, insira um email válido!' });
+  }
 
-  // const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;  
-  // if (!passwordRegex.test(password)) {
-  //     return res.status(422).json({ msg: 'A senha deve conter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma letra minúscula e um número!' });
-  // }
+  const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;  
+  if (!passwordRegex.test(password)) {
+      return res.status(422).json({ msg: 'A senha deve conter pelo menos 8 caracteres, incluindo uma letra maiúscula, uma letra minúscula e um número!' });
+  }
 
-  // Check user exist
   const userExists = await User.findOne({ email: sanitizedEmail })
 
   if (userExists) {
     return res.status(422).json({ msg: 'O email já existe!' })
   }
 
-  // Create password
   const salt = await bcrypt.genSalt(12)
   const passwordHash = await bcrypt.hash(password, salt)
 
-  // Create user
   const user = new User({
     name,
     email: sanitizedEmail,
@@ -73,14 +70,12 @@ router.post('/register', async (req, res) => {
   try {
     await user.save();
 
-    // Create JWT token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '4h' });
 
-    // Set cookie
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 4 * 60 * 60 * 1000, // 4h
+      maxAge: 4 * 60 * 60 * 1000,
       sameSite: 'None',
     });
 
@@ -99,37 +94,33 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  // Verificar se os valores de email e senha estão corretos
-  console.log('Email:', email); // Verifique o valor do email
-  console.log('Password:', password); // Verifique o valor da senha
+  console.log('Email:', email);
+  console.log('Password:', password);
 
   if (!email || !password) {
     return res.status(400).send({ message: "Email e senha são obrigatórios." });
   }
 
   try {
-    // Encontrar o usuário pelo email
     const user = await User.findOne({ email: email });
 
     if (!user) {
       return res.status(401).send({ message: "Usuário não encontrado." });
     }
 
-    // Verificar se a senha corresponde
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       return res.status(401).send({ message: "Senha incorreta." });
     }
 
-    // Criar o token JWT
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '4h' });
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Apenas em produção
-      maxAge: 4 * 60 * 60 * 1000, // 4h
-      sameSite: 'None', // verificar quando for colocar em produção
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 4 * 60 * 60 * 1000,
+      sameSite: 'None',
     });
 
     res.status(200).send(
@@ -137,7 +128,7 @@ router.post('/login', async (req, res) => {
         message: "Login bem-sucedido.",
         user: {
           email: user.email,
-          name: user.name // ou outros dados que você queira retornar
+          name: user.name
         }
       }
     );

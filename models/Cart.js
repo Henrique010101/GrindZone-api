@@ -3,20 +3,20 @@ import mongoose from 'mongoose';
 const cartSchema = new mongoose.Schema({
     userId: { 
         type: mongoose.Schema.Types.ObjectId, 
-        ref: 'users', // Referência à coleção de usuários
+        ref: 'users',
         required: true 
     },
     items: [
         {
             productId: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: 'products', // Referência à coleção de produtos
+                ref: 'products',
                 required: true
             },
             quantity: {
                 type: Number,
                 required: true,
-                min: 1 // Garante que a quantidade mínima de um produto seja 1
+                min: 1
             }
         }
     ],
@@ -30,7 +30,6 @@ const cartSchema = new mongoose.Schema({
     }
 });
 
-// Middleware para atualizar a data de modificação sempre que o carrinho for alterado
 cartSchema.pre('save', function(next) {
     this.updatedAt = Date.now();
     next();

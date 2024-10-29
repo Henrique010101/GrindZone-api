@@ -38,21 +38,20 @@ router.get('/products/promocao', async (req, res) => {
 router.post('/carrinho', upload.single('image'), async (req, res) => {
     try {
         const { name, description, category, price, promocao } = req.body;
-        const image = req.file ? req.file.path.replace(/\\/g, "/") : null; // Corrige o caminho da imagem
+        const image = req.file ? req.file.path.replace(/\\/g, "/") : null;
 
-        // Cria um novo produto com os dados fornecidos
         const newProduct = new Product({
             name,
             description,
             category,
             price,
             promocao,
-            img: image // Armazena o caminho da imagem
+            img: ImageBitmap
         });
 
-        await newProduct.save(); // Salva o produto no banco de dados
+        await newProduct.save();
 
-        res.status(200).json(newProduct); // Retorna o produto criado
+        res.status(200).json(newProduct);
     } catch (err) {
         console.error("Error POST /carrinho: ", err);
         res.status(500).json({ message: err.message || err });
