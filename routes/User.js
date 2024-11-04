@@ -9,11 +9,7 @@ import authMiddleware from '../middleware/auth.js';
 const router = express.Router();
 
 router.get('/check-session', authMiddleware, (req, res) => {
-  if (req.isAuthenticated()) {
-    return res.status(200).json({ isAuthenticated: true });
-} else {
-    return res.status(200).json({ isAuthenticated: false });
-}
+  res.status(200).json({ isAuthenticated: true });
 });
 
 router.get("/logout", authMiddleware, (req, res) => {
