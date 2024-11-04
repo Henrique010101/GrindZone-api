@@ -29,8 +29,6 @@ router.get("/logout", authMiddleware, (req, res) => {
 router.post('/register', async (req, res) => {
   const { name, email, password, confirmpassword } = req.body
 
-  // Validations
-
   const sanitizedEmail = email.trim().toLowerCase();
 
   if (!name) {

@@ -3,17 +3,20 @@ import jwt from 'jsonwebtoken';
 const authMiddleware = async (req, res, next) => {
     const token = req.cookies.token;
 
+    // Se o token não existir, ainda assim prosseguir para a rota
     if (!token) {
-        return res.status(401).json({ msg: 'Acesso negado. Faça login para continuar.' });
+        // Ao invés de retornar um erro, vamos passar para o próximo middleware
+        return next();
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.userId = decoded.userId;
-        next();
+        req.userId = decoded.userId; // Salva o ID do usuário no request
+        next(); // Continua para o próximo middleware ou rota
     } catch (error) {
         console.error('Erro de autenticação:', error);
-        return res.status(403).json({ msg: 'Token inválido ou expirado.' });
+        // Se o token for inválido, ainda assim vamos permitir que a verificação de sessão funcione
+        return next();
     }
 };
 
