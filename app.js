@@ -17,7 +17,8 @@ const __dirname = path.dirname(__filename);
 const port = process.env.PORT || 3000;
 const allowedOrigins = [
   "https://grindzone-of.netlify.app",
-  "http://127.0.0.1:5500"
+  "http://127.0.0.1:5500",
+  "http://localhost:5500"
 ];
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
