@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 
-const authMiddleware = async (req, res, next) => {
-    const token = req.cookies.token;
+const authMiddleware = (req, res, next) => {
+    const token = req.cookies?.token;
 
     if (!token) {
-        return next();
+        return res.status(200).json({ isAuthenticated: false });
     }
 
     try {
