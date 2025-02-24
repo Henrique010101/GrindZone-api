@@ -89,7 +89,6 @@ router.delete('/cart/:productId', authMiddleware, async (req, res) => {
     }
 });
 
-
 router.put('/cart/:productId', authMiddleware, async (req, res) => {
     const productId = req.params.productId; 
     const userId = req.userId; 
